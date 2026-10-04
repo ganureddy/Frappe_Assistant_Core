@@ -422,10 +422,13 @@ class EnhancedErrorHandler:
         """Log error with enhanced context"""
         try:
             # Log to Frappe error log
+            # Frappe v13's log_error has no `context` kwarg - append it to the message
             frappe.log_error(
-                message=f"Enhanced Error: {error_context.message}",
-                title=f"{error_context.tool_name} - {error_context.error_type}",
-                context=error_context.to_dict(),
+                message=(
+                    f"Enhanced Error: {error_context.message}\n\n"
+                    f"Context:\n{frappe.as_json(error_context.to_dict())}"
+                ),
+                title=f"{error_context.tool_name} - {error_context.error_type}"[:140],
             )
 
             # Log to audit trail
@@ -433,7 +436,7 @@ class EnhancedErrorHandler:
 
             # Store in cache for real-time access
             cache_key = f"error_context_{error_context.error_id}"
-            frappe.cache.set_value(cache_key, error_context.to_dict(), expires_in_sec=3600)
+            frappe.cache().set_value(cache_key, error_context.to_dict(), expires_in_sec=3600)
 
         except Exception as e:
             api_logger.error(f"Failed to log error context: {str(e)}")
@@ -535,7 +538,7 @@ def get_error_context(error_id: str) -> Dict[str, Any]:
     """Get detailed error context by error ID"""
     try:
         cache_key = f"error_context_{error_id}"
-        error_data = frappe.cache.get_value(cache_key)
+        error_data = frappe.cache().get_value(cache_key)
 
         if not error_data:
             return {"success": False, "message": "Error context not found"}

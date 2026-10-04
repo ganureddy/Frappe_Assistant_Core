@@ -55,7 +55,7 @@ class ToolRegistry:
             Dict mapping tool_name to configuration dict
         """
         # Try to get from cache first
-        cached = frappe.cache.get_value(self._cache_key)
+        cached = frappe.cache().get_value(self._cache_key)
         if cached is not None:
             return cached
 
@@ -103,7 +103,7 @@ class ToolRegistry:
                 }
 
             # Cache for 60 seconds
-            frappe.cache.set_value(self._cache_key, configs, expires_in_sec=60)
+            frappe.cache().set_value(self._cache_key, configs, expires_in_sec=60)
 
         except Exception as e:
             self.logger.warning(f"Failed to load tool configurations: {e}")
@@ -197,7 +197,7 @@ class ToolRegistry:
 
     def clear_cache(self):
         """Clear the tool configuration cache."""
-        frappe.cache.delete_value(self._cache_key)
+        frappe.cache().delete_value(self._cache_key)
         self._tool_config_cache = None
 
     def get_tool(self, tool_name: str) -> Optional[BaseTool]:

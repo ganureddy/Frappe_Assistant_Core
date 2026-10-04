@@ -27,7 +27,7 @@ It is a no-op on sites that never ran it.
 """
 
 import frappe
-from frappe.query_builder.utils import PseudoColumn
+from pypika.terms import PseudoColumn
 
 
 def execute():
@@ -122,7 +122,7 @@ def _recover_stranded_hrms_records():
     frappe.reload_doc("hr", "doctype", "skill")
 
     Skill = frappe.qb.DocType("Skill")
-    existing = set(frappe.qb.from_(Skill).select(Skill.name).run(pluck="name"))
+    existing = {row[0] for row in frappe.qb.from_(Skill).select(Skill.name).run()}
 
     to_insert = [row for row in stranded if row["name"] not in existing]
 

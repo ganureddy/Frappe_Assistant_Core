@@ -14,8 +14,9 @@ Welcome to Frappe Assistant Core! This guide will walk you through everything yo
 
 Before we begin, make sure you have:
 
-- **ERPNext/Frappe**: Version 15+ installed and running
-- **Python**: Version 3.11+ 
+- **ERPNext/Frappe**: Version 13 installed and running
+- **Python**: Version 3.8+
+- **Node.js**: Version 14 (required by Frappe v13 for `bench build`)
 - **Database**: MariaDB or MySQL properly configured
 - **Admin Access**: Ability to install apps and modify configurations
 - **AI Tool**: Claude Desktop, Claude API access, or other MCP-compatible AI

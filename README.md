@@ -65,11 +65,21 @@ Marketplace: <https://cloud.frappe.io/marketplace/apps/frappe_assistant_core>
 
 ### On self-hosted bench
 
+Requires **Frappe v13** with **Python 3.8+** (Node.js 14 for `bench build`, as Frappe v13
+itself requires). The app ships no frontend build step of its own.
+
 ```bash
 cd frappe-bench
 bench get-app https://github.com/buildswithpaul/Frappe_Assistant_Core
 bench --site <your-site> install-app frappe_assistant_core
 ```
+
+Frappe v13 notes:
+
+- The `.well-known` OAuth discovery endpoints are served from the `before_request` hook
+  (v13 has no `page_renderer` hook).
+- Skills registered by another app through `assistant_skills` are removed on the next
+  `bench migrate` after that app is uninstalled (v13 has no `before_app_uninstall` hook).
 
 ### Connect your LLM
 

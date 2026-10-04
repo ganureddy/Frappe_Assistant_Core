@@ -165,7 +165,7 @@ class PromptTemplate(Document):
 
     def clear_prompt_cache(self):
         """Clear prompt-related caches."""
-        frappe.cache.hdel("prompt_templates", frappe.local.site)
+        frappe.cache().hdel("prompt_templates", frappe.local.site)
 
     @frappe.whitelist()
     def create_version(self, notes: str = None) -> str:

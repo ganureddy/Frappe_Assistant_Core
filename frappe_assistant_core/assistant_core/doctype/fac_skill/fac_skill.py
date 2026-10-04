@@ -79,4 +79,4 @@ class FACSkill(Document):
 
     def clear_skill_cache(self):
         """Clear skill-related caches."""
-        frappe.cache.hdel("skills", frappe.local.site)
+        frappe.cache().hdel("skills", frappe.local.site)

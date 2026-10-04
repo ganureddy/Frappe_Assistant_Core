@@ -58,7 +58,7 @@ class PromptCategory(NestedSet):
 
     def clear_category_cache(self):
         """Clear category-related caches."""
-        frappe.cache.hdel("prompt_categories", frappe.local.site)
+        frappe.cache().hdel("prompt_categories", frappe.local.site)
 
 
 @frappe.whitelist()

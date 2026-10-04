@@ -130,7 +130,7 @@ class MetadataTools:
                 "is_submittable": meta.is_submittable,
                 "is_tree": meta.is_tree,
                 "is_single": meta.istable,
-                "naming_rule": meta.naming_rule,
+                "naming_rule": getattr(meta, "naming_rule", None),  # not on Frappe v13 Meta
                 "title_field": meta.title_field,
                 "fields": fields,
                 "link_fields": link_fields,

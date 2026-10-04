@@ -74,10 +74,11 @@ app_version = app_version
 # ----------
 
 # add methods and filters to jinja environment
+# Frappe v13 requires the "name:dotted.path" format for jenv entries.
 jenv = {
     "methods": [
-        "frappe_assistant_core.utils.template_helpers.get_assistant_status",
-        "frappe_assistant_core.utils.template_helpers.get_tool_count",
+        "get_assistant_status:frappe_assistant_core.utils.template_helpers.get_assistant_status",
+        "get_tool_count:frappe_assistant_core.utils.template_helpers.get_tool_count",
     ]
 }
 
@@ -101,6 +102,7 @@ after_uninstall = "frappe_assistant_core.utils.migration_hooks.after_uninstall"
 
 # Fired before ANY app is uninstalled (including other apps). Used to clean up
 # FAC Skill rows registered by that app via its assistant_skills hook.
+# Frappe v13 does not fire this hook; after_migrate sweeps orphaned skills instead.
 before_app_uninstall = "frappe_assistant_core.utils.migration_hooks.before_app_uninstall"
 
 # Desk Notifications
@@ -175,7 +177,9 @@ override_whitelisted_methods = {
 # Custom Page Renderers
 # ----------------------
 
-# Handle .well-known OAuth endpoints with custom renderer
+# Handle .well-known OAuth endpoints with custom renderer.
+# Not consumed by Frappe v13 (no page_renderer hook); there the endpoints are
+# served by the before_request hook in api/oauth_cors.py instead.
 page_renderer = ["frappe_assistant_core.api.oauth_wellknown_renderer.WellKnownRenderer"]
 
 #
@@ -231,7 +235,7 @@ page_renderer = ["frappe_assistant_core.api.oauth_wellknown_renderer.WellKnownRe
 # -------------
 
 # Handle CORS for OAuth endpoints (dynamic client registration, token endpoints, etc.)
-# Sets frappe.conf.allow_cors (V15) and frappe.local.allow_cors (V16+) based on
+# Sets frappe.conf.allow_cors (V13/V15) and frappe.local.allow_cors (V16+) based on
 # "Allowed Public Client Origins" setting - works immediately without restart
 before_request = ["frappe_assistant_core.api.oauth_cors.set_cors_for_oauth_endpoints"]
 

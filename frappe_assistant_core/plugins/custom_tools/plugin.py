@@ -21,7 +21,7 @@ This plugin discovers and manages tools from external Frappe apps
 using the hooks-based discovery system.
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 import frappe
 from frappe import _
@@ -155,7 +155,7 @@ class CustomToolsPlugin(BasePlugin):
             },
         }
 
-    def validate_environment(self) -> tuple[bool, str]:
+    def validate_environment(self) -> Tuple[bool, str]:
         """Validate plugin environment"""
         try:
             # Check if enhanced tool registry is available

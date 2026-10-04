@@ -71,6 +71,9 @@ def after_migrate():
     # Install/update skills from other apps
     _install_app_skills()
 
+    # Remove skills left behind by apps that are no longer installed
+    _cleanup_skills_from_uninstalled_apps()
+
     # Sync plugin configurations from discovered plugins
     _sync_plugin_configurations()
 
@@ -270,6 +273,32 @@ def before_app_uninstall(app_name: str):
         frappe.logger("migration_hooks").warning(
             f"Failed to clean up skills for uninstalled app '{app_name}': {str(e)}"
         )
+
+
+def _cleanup_skills_from_uninstalled_apps():
+    """
+    Remove skills registered by apps that are no longer installed.
+
+    Frappe v13 has no ``before_app_uninstall`` hook, so skills registered by an
+    app via ``assistant_skills`` would otherwise linger after that app is
+    removed. This sweep runs on every migrate and is a no-op when nothing is
+    orphaned.
+    """
+    try:
+        if not frappe.db.table_exists("FAC Skill"):
+            return
+
+        installed_apps = set(frappe.get_installed_apps())
+        source_apps = frappe.get_all(
+            "FAC Skill",
+            filters={"is_system": 1, "source_app": ["is", "set"]},
+            pluck="source_app",
+            distinct=True,
+        )
+        for app_name in set(source_apps) - installed_apps:
+            before_app_uninstall(app_name)
+    except Exception as e:
+        frappe.logger("migration_hooks").warning(f"Failed to clean up orphaned app skills: {str(e)}")
 
 
 def get_migration_status() -> Dict[str, Any]:

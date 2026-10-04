@@ -58,7 +58,7 @@ def toggle_prompt_template_status(name: str, publish: bool):
         doc.save(ignore_permissions=True)
         frappe.db.commit()
 
-        frappe.cache.hdel("prompt_templates", frappe.local.site)
+        frappe.cache().hdel("prompt_templates", frappe.local.site)
 
         return {
             "success": True,

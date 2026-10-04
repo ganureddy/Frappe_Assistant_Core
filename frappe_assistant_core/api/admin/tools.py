@@ -6,6 +6,8 @@
 import frappe
 from frappe import _
 
+from frappe_assistant_core.utils.frappe_compat import release_savepoint, rollback_savepoint
+
 
 @frappe.whitelist()
 def get_tool_configurations() -> dict:
@@ -172,7 +174,7 @@ def toggle_tool(tool_name: str, enabled: bool):
                 config.source_app = getattr(tool_info.instance, "source_app", "frappe_assistant_core")
                 config.insert(ignore_permissions=True)
 
-            frappe.db.release_savepoint("toggle_tool")
+            release_savepoint("toggle_tool")
             frappe.db.commit()
 
             # Clear caches
@@ -186,7 +188,7 @@ def toggle_tool(tool_name: str, enabled: bool):
             return {"success": True, "message": _(f"Tool '{tool_name}' {action} successfully")}
 
         except Exception as e:
-            frappe.db.rollback_savepoint("toggle_tool")
+            rollback_savepoint("toggle_tool")
             raise e
 
     except Exception as e:

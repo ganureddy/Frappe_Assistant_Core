@@ -61,7 +61,7 @@
  "fields": [
   {
    "fieldname": "general_tab",
-   "fieldtype": "Tab Break",
+   "fieldtype": "Section Break",
    "label": "General"
   },
   {
@@ -87,7 +87,7 @@
   },
   {
    "fieldname": "plugins_tab",
-   "fieldtype": "Tab Break",
+   "fieldtype": "Section Break",
    "label": "Plugins & Tools"
   },
   {
@@ -99,10 +99,11 @@
   {
    "default": "[\"core\"]",
    "fieldname": "enabled_plugins_list",
-   "fieldtype": "JSON",
+   "fieldtype": "Code",
    "hidden": 1,
    "label": "Enabled Plugins",
-   "description": "Internal list of enabled plugin IDs"
+   "description": "Internal list of enabled plugin IDs",
+   "options": "JSON"
   },
   {
    "fieldname": "plugin_status_html",
@@ -113,7 +114,7 @@
   },
   {
    "fieldname": "security_tab",
-   "fieldtype": "Tab Break",
+   "fieldtype": "Section Break",
    "label": "Security"
   },
   {
@@ -175,7 +176,7 @@
   },
   {
    "fieldname": "ocr_tab",
-   "fieldtype": "Tab Break",
+   "fieldtype": "Section Break",
    "label": "OCR"
   },
   {
@@ -255,7 +256,7 @@
   },
   {
    "fieldname": "mcp_configuration_tab",
-   "fieldtype": "Tab Break",
+   "fieldtype": "Section Break",
    "label": "MCP Configuration"
   },
   {
@@ -302,9 +303,8 @@
   },
   {
    "fieldname": "oauth_tab",
-   "fieldtype": "Tab Break",
-   "label": "OAuth",
-   "depends_on": "eval:!frappe.boot.versions?.frappe?.startsWith('16')"
+   "fieldtype": "Section Break",
+   "label": "OAuth"
   },
   {
    "fieldname": "oauth_authorization_section",
@@ -394,7 +394,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-01-21 10:00:00.000000",
+ "modified": "2026-10-04 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Assistant Core",
  "name": "Assistant Core Settings",

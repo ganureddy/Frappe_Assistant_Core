@@ -12,17 +12,15 @@ concurrency:
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    # Pinned to ubuntu-22.04 so actions/setup-python can provide Python 3.8 (Frappe v13)
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
         include:
-          - frappe-branch: version-15
-            python-version: '3.12'
-            node-version: 18
-          - frappe-branch: version-16
-            python-version: '3.14'
-            node-version: 24
+          - frappe-branch: version-13
+            python-version: '3.8'
+            node-version: 14
     name: Server (${{ matrix.frappe-branch }})
 
     services:
@@ -90,7 +88,9 @@ jobs:
 
       - name: Setup
         run: |
-          pip install frappe-bench
+          # Install the bench CLI with the runner's system Python; the bench
+          # environment itself uses the matrix Python via --python below.
+          pipx install frappe-bench
           bench init --skip-redis-config-generation --skip-assets --python "$(which python)" --frappe-branch ${{ matrix.frappe-branch }} ~/frappe-bench
           mariadb --host 127.0.0.1 --port 3306 -u root -proot -e "SET GLOBAL character_set_server = 'utf8mb4'"
           mariadb --host 127.0.0.1 --port 3306 -u root -proot -e "SET GLOBAL collation_server = 'utf8mb4_unicode_ci'"

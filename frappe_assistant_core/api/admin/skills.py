@@ -59,7 +59,7 @@ def toggle_skill_status(name: str, publish: bool):
         doc.save(ignore_permissions=True)
         frappe.db.commit()
 
-        frappe.cache.hdel("skills", frappe.local.site)
+        frappe.cache().hdel("skills", frappe.local.site)
 
         return {
             "success": True,

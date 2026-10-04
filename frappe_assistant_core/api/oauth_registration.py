@@ -21,11 +21,14 @@ Implements RFC 7591 - OAuth 2.0 Dynamic Client Registration Protocol
 https://datatracker.ietf.org/doc/html/rfc7591
 """
 
+from typing import List, Optional
+
 import frappe
 from pydantic import AnyUrl, BaseModel, HttpUrl, ValidationError
-from werkzeug import Response
 from werkzeug.exceptions import NotFound
+from werkzeug.wrappers import Response
 
+from frappe_assistant_core.utils.frappe_compat import get_request_json
 from frappe_assistant_core.utils.oauth_compat import (
     create_oauth_client,
     get_oauth_settings,
@@ -43,27 +46,27 @@ class OAuth2DynamicClientMetadata(BaseModel):
 
     # Used to identify the client to the authorization server
     # AnyUrl allows custom URI schemes for native apps (RFC 8252)
-    redirect_uris: list[AnyUrl]
-    token_endpoint_auth_method: str | None = "client_secret_basic"
-    grant_types: list[str] | None = ["authorization_code"]
-    response_types: list[str] | None = ["code"]
+    redirect_uris: List[AnyUrl]
+    token_endpoint_auth_method: Optional[str] = "client_secret_basic"
+    grant_types: Optional[List[str]] = ["authorization_code"]
+    response_types: Optional[List[str]] = ["code"]
 
     # Client identifiers shown to user
     client_name: str
-    scope: str | None = None
-    client_uri: HttpUrl | None = None
-    logo_uri: HttpUrl | None = None
+    scope: Optional[str] = None
+    client_uri: Optional[HttpUrl] = None
+    logo_uri: Optional[HttpUrl] = None
 
     # Client contact and other information for the client
-    contacts: list[str] | None = None
-    tos_uri: HttpUrl | None = None
-    policy_uri: HttpUrl | None = None
-    software_id: str | None = None
-    software_version: str | None = None
+    contacts: Optional[List[str]] = None
+    tos_uri: Optional[HttpUrl] = None
+    policy_uri: Optional[HttpUrl] = None
+    software_id: Optional[str] = None
+    software_version: Optional[str] = None
 
     # JSON Web Key Set (JWKS) not used here
-    jwks_uri: HttpUrl | None = None
-    jwks: dict | None = None
+    jwks_uri: Optional[HttpUrl] = None
+    jwks: Optional[dict] = None
 
 
 # nosemgrep: frappe-semgrep-rules.rules.security.guest-whitelisted-method — RFC 7591 Dynamic Client Registration is unauthenticated by design so new clients can onboard
@@ -124,7 +127,7 @@ def register_client():
     response.mimetype = "application/json"
 
     # Get request data
-    data = frappe.request.json
+    data = get_request_json(silent=True)
 
     if data is None:
         response.status_code = 400
@@ -151,7 +154,7 @@ def register_client():
     try:
         response_data = create_oauth_client(client)
     except Exception as e:
-        frappe.log_error("OAuth Client Registration Failed", str(e))
+        frappe.log_error(title="OAuth Client Registration Failed", message=str(e))
         response.status_code = 500
         response.data = frappe.as_json(
             {

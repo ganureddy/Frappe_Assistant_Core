@@ -26,6 +26,7 @@ from frappe import _
 from frappe.query_builder import DocType
 
 from frappe_assistant_core.core.base_tool import BaseTool
+from frappe_assistant_core.utils.frappe_compat import has_workflow_action_permitted_roles
 
 MAX_TRANSITION_DOCS = 20
 
@@ -86,16 +87,20 @@ class GetPendingApprovals(BaseTool):
         roles = frappe.get_roles(user)
 
         WA = DocType("Workflow Action")
-        WAPR = DocType("Workflow Action Permitted Role")
 
-        # Subquery: workflow action names where permitted roles overlap user's roles
-        role_subquery = (
-            frappe.qb.from_(WA)
-            .join(WAPR)
-            .on(WA.name == WAPR.parent)
-            .select(WA.name)
-            .where(WAPR.role.isin(roles))
-        )
+        # Subquery: workflow action names where permitted roles overlap user's roles.
+        # Frappe v13 has no "Workflow Action Permitted Role" table; actions are
+        # created per user there, so the direct user match below is sufficient.
+        role_subquery = None
+        if has_workflow_action_permitted_roles():
+            WAPR = DocType("Workflow Action Permitted Role")
+            role_subquery = (
+                frappe.qb.from_(WA)
+                .join(WAPR)
+                .on(WA.name == WAPR.parent)
+                .select(WA.name)
+                .where(WAPR.role.isin(roles))
+            )
 
         # Main query
         query = (
@@ -115,7 +120,10 @@ class GetPendingApprovals(BaseTool):
 
         # Administrator sees all; others filtered by role or direct user
         if user != "Administrator":
-            query = query.where(WA.name.isin(role_subquery) | (WA.user == user))
+            if role_subquery is not None:
+                query = query.where(WA.name.isin(role_subquery) | (WA.user == user))
+            else:
+                query = query.where(WA.user == user)
 
         if doctype_filter:
             query = query.where(WA.reference_doctype == doctype_filter)
@@ -140,11 +148,13 @@ class GetPendingApprovals(BaseTool):
 
         # Batch-fetch permitted roles for all returned actions
         action_names = [a.name for a in pending_actions]
-        all_roles = frappe.get_all(
-            "Workflow Action Permitted Role",
-            filters={"parent": ["in", action_names]},
-            fields=["parent", "role"],
-        )
+        all_roles = []
+        if role_subquery is not None:
+            all_roles = frappe.get_all(
+                "Workflow Action Permitted Role",
+                filters={"parent": ["in", action_names]},
+                fields=["parent", "role"],
+            )
         roles_map: Dict[str, list] = {}
         for r in all_roles:
             roles_map.setdefault(r.parent, []).append(r.role)

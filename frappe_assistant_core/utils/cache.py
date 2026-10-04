@@ -26,7 +26,8 @@ from typing import Any, Dict, List
 
 import frappe
 from frappe.utils import cint, flt
-from frappe.utils.caching import redis_cache, site_cache
+
+from frappe_assistant_core.utils.frappe_compat import redis_cache, site_cache
 
 # Cache TTL constants (in seconds)
 CACHE_TTL = {
@@ -69,13 +70,13 @@ def cache_with_user_context(ttl=300, shared=False):
             cache_key = get_cache_key(func.__name__, user, *args)
 
             # Try to get from cache
-            cached_result = frappe.cache.get_value(cache_key)
+            cached_result = frappe.cache().get_value(cache_key)
             if cached_result is not None:
                 return cached_result
 
             # Execute function and cache result
             result = func(*args, **kwargs)
-            frappe.cache.set_value(cache_key, result, expires_in_sec=ttl)
+            frappe.cache().set_value(cache_key, result, expires_in_sec=ttl)
             return result
 
         return wrapper
@@ -94,18 +95,18 @@ def cache_with_invalidation(ttl=300, invalidation_keys=None):
             # Check if any invalidation keys have changed
             if invalidation_keys:
                 for inv_key in invalidation_keys:
-                    last_modified = frappe.cache.get_value(f"{inv_key}_modified")
+                    last_modified = frappe.cache().get_value(f"{inv_key}_modified")
                     if last_modified:
                         # If data was modified, clear cache
-                        frappe.cache.delete_key(cache_key)
+                        frappe.cache().delete_key(cache_key)
                         break
 
-            cached_result = frappe.cache.get_value(cache_key)
+            cached_result = frappe.cache().get_value(cache_key)
             if cached_result is not None:
                 return cached_result
 
             result = func(*args, **kwargs)
-            frappe.cache.set_value(cache_key, result, expires_in_sec=ttl)
+            frappe.cache().set_value(cache_key, result, expires_in_sec=ttl)
             return result
 
         return wrapper
@@ -318,10 +319,10 @@ def invalidate_settings_cache(doc=None, method=None):
     cache_keys = [get_cache_key(CACHE_KEYS["settings"]), "get_cached_server_settings"]
 
     for key in cache_keys:
-        frappe.cache.delete_key(key)
+        frappe.cache().delete_key(key)
 
     # Mark settings as modified for dependent caches
-    frappe.cache.set_value("settings_modified", frappe.utils.now(), expires_in_sec=3600)
+    frappe.cache().set_value("settings_modified", frappe.utils.now(), expires_in_sec=3600)
 
 
 def invalidate_dashboard_cache(doc=None, method=None):
@@ -332,10 +333,10 @@ def invalidate_dashboard_cache(doc=None, method=None):
         method: Method name (passed by hooks)
     """
     # Clear all user-specific dashboard caches
-    frappe.cache.delete_keys("get_cached_dashboard_stats_*")
-    frappe.cache.delete_keys("assistant_dashboard_*")
-    frappe.cache.delete_key("get_cached_most_used_tools")
-    frappe.cache.delete_key("get_cached_category_performance")
+    frappe.cache().delete_keys("get_cached_dashboard_stats_*")
+    frappe.cache().delete_keys("assistant_dashboard_*")
+    frappe.cache().delete_key("get_cached_most_used_tools")
+    frappe.cache().delete_key("get_cached_category_performance")
 
 
 def invalidate_tool_registry_cache():
@@ -345,18 +346,18 @@ def invalidate_tool_registry_cache():
     # Clear registry caches
     registry = get_tool_registry()
     registry._discover_tools()  # Force refresh
-    frappe.cache.delete_key("get_cached_tool_registry_stats")
-    frappe.cache.delete_keys("get_cached_user_tool_permissions_*")
+    frappe.cache().delete_key("get_cached_tool_registry_stats")
+    frappe.cache().delete_keys("get_cached_user_tool_permissions_*")
 
 
 def invalidate_user_permission_cache(user=None):
     """Invalidate user-specific permission caches"""
     if user:
         user_cache_pattern = f"*{user}*"
-        frappe.cache.delete_keys(f"get_cached_user_tool_permissions_{user_cache_pattern}")
+        frappe.cache().delete_keys(f"get_cached_user_tool_permissions_{user_cache_pattern}")
     else:
         # Clear all user permission caches
-        frappe.cache.delete_keys("get_cached_user_tool_permissions_*")
+        frappe.cache().delete_keys("get_cached_user_tool_permissions_*")
 
 
 def clear_all_assistant_cache():
@@ -364,7 +365,7 @@ def clear_all_assistant_cache():
     cache_patterns = ["assistant_*", "get_cached_*"]
 
     for pattern in cache_patterns:
-        frappe.cache.delete_keys(pattern)
+        frappe.cache().delete_keys(pattern)
 
     # Clear tool registry cache
     invalidate_tool_registry_cache()
@@ -375,9 +376,9 @@ def get_cache_statistics():
     try:
         # This would need Redis info if available
         cache_info = {
-            "cache_backend": "Redis" if frappe.cache.redis else "Memory",
+            "cache_backend": "Redis" if frappe.cache() else "Memory",
             "cache_keys_active": "Unknown",  # Redis would need KEYS command
-            "last_cleared": frappe.cache.get_value("last_cache_clear") or "Never",
+            "last_cleared": frappe.cache().get_value("last_cache_clear") or "Never",
         }
 
         return cache_info

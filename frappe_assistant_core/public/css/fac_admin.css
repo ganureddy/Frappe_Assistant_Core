@@ -216,7 +216,7 @@ input:checked + .slider:before {
     border: 1px solid var(--border-color);
 }
 .fac-endpoint-url {
-    font-family: var(--font-stack-monospace);
+    font-family: var(--font-stack-monospace, monospace);
     font-size: 12px;
     word-break: break-all;
 }

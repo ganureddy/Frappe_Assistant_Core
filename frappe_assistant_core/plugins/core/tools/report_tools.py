@@ -247,11 +247,13 @@ class ReportTools:
         """
         import time
 
-        from frappe.core.doctype.prepared_report.prepared_report import (
+        from frappe.desk.query_report import get_prepared_report_result, run
+
+        from frappe_assistant_core.utils.frappe_compat import (
             get_completed_prepared_report,
+            get_report_timeout,
             make_prepared_report,
         )
-        from frappe.desk.query_report import get_prepared_report_result, run
 
         try:
             # Check if a completed prepared report exists with these filters
@@ -278,7 +280,7 @@ class ReportTools:
                     }
 
             # Get report timeout configuration
-            report_timeout = frappe.get_value("Report", report_doc.name, "timeout") or 120
+            report_timeout = get_report_timeout(report_doc.name, default=120)
 
             # Try quick direct execution for fast reports
             if report_timeout < 60:
@@ -341,7 +343,7 @@ class ReportTools:
                             "status": "completed",
                         }
 
-                elif prepared_doc.status == "Error":
+                elif prepared_doc.status in ("Error", "Failed"):
                     # Report generation failed
                     error_message = prepared_doc.error_message or "Unknown error during report generation"
                     return {

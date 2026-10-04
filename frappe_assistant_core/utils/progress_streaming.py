@@ -145,11 +145,11 @@ class ProgressTracker:
         """Cache the update for real-time access"""
         try:
             cache_key = f"progress_{self.operation_id}"
-            frappe.cache.set_value(cache_key, update.to_dict(), expires_in_sec=3600)
+            frappe.cache().set_value(cache_key, update.to_dict(), expires_in_sec=3600)
 
             # Also maintain a user-specific list of active operations
             user_ops_key = f"user_operations_{self.user}"
-            user_ops = frappe.cache.get_value(user_ops_key) or []
+            user_ops = frappe.cache().get_value(user_ops_key) or []
 
             # Update or add operation
             found = False
@@ -164,7 +164,7 @@ class ProgressTracker:
 
             # Keep only recent operations (last 50)
             user_ops = user_ops[-50:]
-            frappe.cache.set_value(user_ops_key, user_ops, expires_in_sec=7200)
+            frappe.cache().set_value(user_ops_key, user_ops, expires_in_sec=7200)
 
         except Exception as e:
             api_logger.error(f"Failed to cache progress update: {str(e)}")
@@ -242,7 +242,7 @@ class ProgressStreamingService:
         """Get active operations for a user"""
         try:
             cache_key = f"user_operations_{user}"
-            operations = frappe.cache.get_value(cache_key) or []
+            operations = frappe.cache().get_value(cache_key) or []
 
             # Filter out completed operations older than 1 hour
             current_time = datetime.now()
@@ -359,7 +359,7 @@ def get_operation_progress(operation_id: str) -> Dict[str, Any]:
     """Get progress for a specific operation"""
     try:
         cache_key = f"progress_{operation_id}"
-        progress_data = frappe.cache.get_value(cache_key)
+        progress_data = frappe.cache().get_value(cache_key)
 
         if not progress_data:
             return {"success": False, "message": "Operation not found"}

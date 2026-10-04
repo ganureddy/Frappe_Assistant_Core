@@ -36,6 +36,8 @@ from typing import Any, Dict, Optional
 
 from werkzeug.wrappers import Request, Response
 
+from frappe_assistant_core.utils.frappe_compat import get_request_json
+
 
 class MCPServer:
     """
@@ -154,7 +156,7 @@ class MCPServer:
 
         # Parse JSON request
         try:
-            data = request.get_json(force=True)
+            data = get_request_json(request, force=True)
             # Log incoming request for debugging
             frappe.logger().debug(f"MCP Request: method={data.get('method')}, id={data.get('id')}")
         except Exception as e:

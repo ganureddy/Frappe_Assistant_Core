@@ -25,6 +25,7 @@ import frappe
 from frappe import _
 
 from frappe_assistant_core.core.base_tool import BaseTool
+from frappe_assistant_core.utils.frappe_compat import get_report_timeout
 
 
 class ReportRequirements(BaseTool):
@@ -104,7 +105,7 @@ class ReportRequirements(BaseTool):
             if getattr(report_doc, "prepared_report", False) and not getattr(
                 report_doc, "disable_prepared_report", False
             ):
-                report_timeout = frappe.get_value("Report", report_name, "timeout") or 120
+                report_timeout = get_report_timeout(report_name, default=120)
                 result["prepared_report_info"] = {
                     "requires_background_processing": True,
                     "typical_execution_time": f"{report_timeout // 60} minutes for large datasets",

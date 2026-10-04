@@ -212,7 +212,7 @@ class SearchTools:
                 return {"success": False, "error": f"No read permission for DocType '{doctype}'"}
 
             # Use Frappe's link search functionality
-            from frappe.desk.search import search_link
+            from frappe_assistant_core.utils.frappe_compat import search_link
 
             results = search_link(doctype=doctype, txt=query, filters=filters or {})
 
